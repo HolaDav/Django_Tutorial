@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.db.models import Q
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from .models import Club, Genre
 from .forms import ClubForm
@@ -19,6 +22,31 @@ from .forms import ClubForm
 #     {"id":10, "name":"Tales & Tea"},
 # ]
 
+def loginpage(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        try:
+            user = User.objects.get(username=username)
+        except:
+            messages.error(request, 'User does not exits')
+        
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'Username or Password is not correct')
+
+    context = {}
+    return render(request, 'base/login_register.html', context)
+
+def logoutuser(request):
+    logout(request)
+    return redirect('home')
+
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
 
@@ -30,7 +58,9 @@ def home(request):
 
     genres = Genre.objects.all()
 
-    context = {"clubs": clubs, 'genres': genres}
+    club_count = clubs.count()
+
+    context = {"clubs": clubs, 'genres': genres, 'club_count': club_count}
     return render(request, 'base/home.html', context)
 
 def club(request, pk):
