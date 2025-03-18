@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
+from django.db.models import Q
 from django.http import HttpResponse
-from .models import Club
+from .models import Club, Genre
 from .forms import ClubForm
 
 # Create your views here.
@@ -19,8 +20,17 @@ from .forms import ClubForm
 # ]
 
 def home(request):
-    clubs = Club.objects.all()
-    context = {"clubs": clubs}
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+
+    clubs = Club.objects.filter(
+        Q(genre__name__icontains=q) |
+        Q(name__icontains=q) |
+        Q(description__icontains=q)
+    )
+
+    genres = Genre.objects.all()
+
+    context = {"clubs": clubs, 'genres': genres}
     return render(request, 'base/home.html', context)
 
 def club(request, pk):
