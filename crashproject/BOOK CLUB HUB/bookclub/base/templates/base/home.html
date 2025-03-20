@@ -29,7 +29,7 @@
 
     </div>
 
-    <div>
+    <!-- <div>
         <div>
             <h1>Welcome to Book Club Hub</h1>
             <p>Where readers unite and stories comes alive</p>
@@ -62,7 +62,7 @@
             </ul>
         </div>
 
-        <h2>Clubs</h2>
+        <h2>Clubs</h2> -->
 
         <div>
             <h5>{{club_count}} Clubs available.</h5>
@@ -72,8 +72,10 @@
             <div>
                 {% for club in clubs %}
                 <div>
+                    {% if request.user == club.host %}
                     <a href="{% url 'update-club' club.id %}">Edit</a>
                     <a href="{% url 'delete-club' club.id %}">Delete</a>
+                    {% endif %}
                     <span>@{{club.host.username}}</span>
                     <h5>{{club.id}} -- <a href="{% url 'club' club.id %}">{{club.name}}</a></h5>
                     <small>{{club.genre.name}}</small>

@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse
 from .models import Club, Genre
 from .forms import ClubForm
@@ -22,9 +24,14 @@ from .forms import ClubForm
 #     {"id":10, "name":"Tales & Tea"},
 # ]
 
-def loginpage(request):
+def loginPage(request):
+    page = 'login'
+
+    if request.user.is_authenticated:
+        return redirect('home')
+
     if request.method == 'POST':
-        username = request.POST.get('username')
+        username = request.POST.get('username').lower()
         password = request.POST.get('password')
 
         try:
@@ -40,12 +47,28 @@ def loginpage(request):
         else:
             messages.error(request, 'Username or Password is not correct')
 
-    context = {}
+    context = {'page': page}
     return render(request, 'base/login_register.html', context)
 
-def logoutuser(request):
+def logoutUser(request):
     logout(request)
     return redirect('home')
+
+def registerPage(request):
+    form = UserCreationForm()
+
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.username = user.username.lower()
+            user.save()
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'An error occured during registration')
+
+    return render(request, 'base/login_register.html', {'form': form})
 
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
@@ -68,6 +91,7 @@ def club(request, pk):
     context = {"club": club}
     return render(request, 'base/club.html', context)
 
+@login_required(login_url='login')
 def createClub(request):
     form = ClubForm()
 
@@ -80,9 +104,13 @@ def createClub(request):
     context = {"form":form}
     return render(request, 'base/club_form.html', context)
 
+@login_required(login_url='login')
 def updateClub(request, pk):
     club = Club.objects.get(id=pk)
     form = ClubForm(instance=club)
+
+    if request.user != club.host:
+        return HttpResponse('You are not allowed here!!')
 
     if request.method == 'POST':
         form = ClubForm(request.POST, instance=club)
@@ -93,8 +121,12 @@ def updateClub(request, pk):
     context = {'form': form}
     return render(request, 'base/club_form.html', context)
 
+@login_required(login_url='login')
 def deleteClub(request, pk):
     club = Club.objects.get(id=pk)
+
+    if request.user != club.host:
+        return HttpResponse('You are not allowed here!!')
 
     if request.method == 'POST':
         club.delete()
