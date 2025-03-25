@@ -65,7 +65,11 @@
         <h2>Clubs</h2> -->
 
         <div>
+            {% if club_count > 1 %}
             <h5>{{club_count}} Clubs available.</h5>
+            {% else %}
+            <h5>{{club_count}} Club available.</h5>
+            {% endif %}
             <a href="{% url 'create-club' %}">Create Club</a>
             <hr>
         

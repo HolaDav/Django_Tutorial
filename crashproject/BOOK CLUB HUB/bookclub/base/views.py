@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse
-from .models import Club, Genre
+from .models import Club, Genre, Message
 from .forms import ClubForm
 
 # Create your views here.
@@ -88,7 +88,17 @@ def home(request):
 
 def club(request, pk):
     club = Club.objects.get(id=pk)
-    context = {"club": club}
+    club_messages = club.message_set.all().order_by('-created')
+
+    if request.method == 'POST':
+        club_messages = Message.objects.create(
+            user=request.user,
+            club=club,
+            body=request.POST.get('body')
+        )
+        return redirect('club', pk=club.id)
+
+    context = {"club": club, 'club_messages': club_messages}
     return render(request, 'base/club.html', context)
 
 @login_required(login_url='login')
