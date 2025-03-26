@@ -11,23 +11,26 @@
 
 <div class="home-container">
 
-    <div>
-        <h3>Browse Genre</h3>
-        <hr>
-
-        <div>
-            <a href="{% url 'home' %}">All</a>
-        </div>
-
-        <div>
-            {% for genre in genres %}
+    <section id="browse">
+        <div class="container">
+            <h3>Browse Genre</h3>
+            <hr>
+    
             <div>
-                <a href="{% url 'home' %}?q={{genre.name}}">{{genre.name}}</a>
+                <a href="{% url 'home' %}">All</a>
             </div>
-            {% endfor %}
+    
+            <div>
+                {% for genre in genres %}
+                <div>
+                    <a href="{% url 'home' %}?q={{genre.name}}">{{genre.name}}</a>
+                </div>
+                {% endfor %}
+            </div>
+    
         </div>
+    </section>
 
-    </div>
 
     <!-- <div>
         <div>
@@ -64,32 +67,42 @@
 
         <h2>Clubs</h2> -->
 
-        <div>
-            {% if club_count > 1 %}
-            <h5>{{club_count}} Clubs available.</h5>
-            {% else %}
-            <h5>{{club_count}} Club available.</h5>
-            {% endif %}
-            <a href="{% url 'create-club' %}">Create Club</a>
-            <hr>
-        
+        <section id="clublist" class="py-5">
             <div>
-                {% for club in clubs %}
+                {% if club_count > 1 %}
+                <h5>{{club_count}} Clubs available.</h5>
+                {% else %}
+                <h5>{{club_count}} Club available.</h5>
+                {% endif %}
+                <a href="{% url 'create-club' %}">Create Club</a>
+                <hr>
+            
                 <div>
-                    {% if request.user == club.host %}
-                    <a href="{% url 'update-club' club.id %}">Edit</a>
-                    <a href="{% url 'delete-club' club.id %}">Delete</a>
-                    {% endif %}
-                    <span>@{{club.host.username}}</span>
-                    <h5>{{club.id}} -- <a href="{% url 'club' club.id %}">{{club.name}}</a></h5>
-                    <small>{{club.genre.name}}</small>
-                    <hr>
+                    {% for club in clubs %}
+                    <div>
+                        {% if request.user == club.host %}
+                        <a href="{% url 'update-club' club.id %}">Edit</a>
+                        <a href="{% url 'delete-club' club.id %}">Delete</a>
+                        {% endif %}
+                        <span>@{{club.host.username}}</span>
+                        <h5>{{club.id}} -- <a href="{% url 'club' club.id %}">{{club.name}}</a></h5>
+                        <small>{{club.genre.name}}</small>
+                        <hr>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
 
-        </div>
+            </div>
+        </section>
+
     </div>
+
+    <footer class="py-4 bg-dark text-white text-center">
+        <div class="container">
+            <p>&copy; 2025 BookHub Club. All Rights Reserved.</p>
+            <a href="https://instagram.com/ola_da.vid?igshid=OGY3MTU30GY1Mw==" target="_blank" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+        </div>
+    </footer>
 
 </div>
 
