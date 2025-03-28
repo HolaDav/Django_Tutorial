@@ -80,15 +80,17 @@ def home(request):
     )
 
     genres = Genre.objects.all()
-
     club_count = clubs.count()
+    club_messages = Message.objects.all()
 
-    context = {"clubs": clubs, 'genres': genres, 'club_count': club_count}
+    context = {"clubs": clubs, 'genres': genres, 'club_count': club_count, 'club_messages': club_messages}
     return render(request, 'base/home.html', context)
 
 def club(request, pk):
     club = Club.objects.get(id=pk)
-    club_messages = club.message_set.all().order_by('-created')
+    club_messages = club.message_set.all()
+    participants = club.participants.all()
+
 
     if request.method == 'POST':
         club_messages = Message.objects.create(
@@ -96,9 +98,10 @@ def club(request, pk):
             club=club,
             body=request.POST.get('body')
         )
+        club.participants.add(request.user)
         return redirect('club', pk=club.id)
 
-    context = {"club": club, 'club_messages': club_messages}
+    context = {"club": club, 'club_messages': club_messages, 'participants': participants}
     return render(request, 'base/club.html', context)
 
 @login_required(login_url='login')
@@ -142,3 +145,32 @@ def deleteClub(request, pk):
         club.delete()
         return redirect('home')
     return render(request, 'base/delete.html', {"obj":club})
+
+@login_required(login_url='login')
+def updateMessage(request, pk):
+    message = Message.objects.get(id=pk)
+    club = message.club
+
+    if request.user != message.user:
+        return HttpResponse('You are not allowed here!!')
+
+    if request.method == 'POST':
+        message.body = request.POST.get('body')
+        message.save()
+        return redirect('club', pk=club.id)
+    
+    context = {'message': message}
+    return render(request, 'base/update_club.html', context)
+
+@login_required(login_url='login')
+def deleteMessage(request, pk):
+    message = Message.objects.get(id=pk)
+    club = message.club
+
+    if request.user != message.user:
+        return HttpResponse('You are not allowed here!!')
+
+    if request.method == 'POST':
+        message.delete()
+        return redirect('club', pk=club.id)
+    return render(request, 'base/delete.html', {"obj":message})
